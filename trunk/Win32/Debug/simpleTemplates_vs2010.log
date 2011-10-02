@@ -1,0 +1,41 @@
+﻿Build started 02/10/2011 19:12:21.
+     1>Project "C:\Users\Gadi\AppData\Local\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\src\AES\simpleTemplates_vs2010.vcxproj" on node 3 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Win32/Debug/simpleTemplates.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       AddCudaCompileDeps:
+       Skipping target "AddCudaCompileDeps" because all output files are up-to-date with respect to the input files.
+       AddCudaCompileDeps:
+       Skipping target "AddCudaCompileDeps" because all output files are up-to-date with respect to the input files.
+       AddCudaCompilePropsDeps:
+       Skipping target "AddCudaCompilePropsDeps" because all output files are up-to-date with respect to the input files.
+       AddCudaCompilePropsDeps:
+       Skipping target "AddCudaCompilePropsDeps" because all output files are up-to-date with respect to the input files.
+       AddCudaCompilePropsDeps:
+       Skipping target "AddCudaCompilePropsDeps" because all output files are up-to-date with respect to the input files.
+       AddCudaCompilePropsDeps:
+       Skipping target "AddCudaCompilePropsDeps" because all output files are up-to-date with respect to the input files.
+       AddCudaCompilePropsDeps:
+       Skipping target "AddCudaCompilePropsDeps" because all output files are up-to-date with respect to the input files.
+       CudaBuild:
+         Skipping CUDA source file cuPrintf.cu (excluded from build).
+       CudaBuild:
+       Skipping target "CudaBuild" because all output files are up-to-date with respect to the input files.
+       CudaBuild:
+         Skipping CUDA source file Rijndael_GPU_kernel.cu (excluded from build).
+       CudaBuild:
+       Skipping target "CudaBuild" because all output files are up-to-date with respect to the input files.
+       CudaBuild:
+         Skipping CUDA source file simpleTemplates_kernel.cu (excluded from build).
+       ClCompile:
+         All outputs are up-to-date.
+       Link:
+         All outputs are up-to-date.
+         simpleTemplates_vs2010.vcxproj -> C:\Users\Gadi\AppData\Local\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\src\AES\../../bin/win32/Debug/simpleTemplates.exe
+       FinalizeBuildStatus:
+         Deleting file "Win32/Debug/simpleTemplates.unsuccessfulbuild".
+         Touching "Win32/Debug/simpleTemplates.lastbuildstate".
+     1>Done Building Project "C:\Users\Gadi\AppData\Local\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\src\AES\simpleTemplates_vs2010.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.11

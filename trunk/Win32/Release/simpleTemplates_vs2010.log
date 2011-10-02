@@ -1,0 +1,105 @@
+﻿Build started 25/09/2011 14:06:57.
+     1>Project "C:\Users\Gadi\AppData\Local\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\src\AES\simpleTemplates_vs2010.vcxproj" on node 4 (rebuild target(s)).
+     1>_PrepareForClean:
+         Deleting file "Win32/Release/simpleTemplates.lastbuildstate".
+       CudaClean:
+         cmd.exe /C "C:\Users\Gadi\AppData\Local\Temp\f28f1c92c98a4e41a05a5e45af54ebe2.cmd"
+         "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.0\bin\nvcc.exe" -ccbin "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin" -I"./" -I"../../common/inc" -I"../../../shared/inc" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.0\include"    --keep-dir "Release" -maxrregcount=0  --machine 32 --compile      -Xcompiler "/EHsc /nologo /Od /Zi  /MT " -o "Win32/Release/simpleTemplates.cu.obj" "C:\Users\Gadi\AppData\Local\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\src\AES\simpleTemplates.cu" -clean
+         
+         C:\Users\Gadi\AppData\Local\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\src\AES>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.0\bin\nvcc.exe" -ccbin "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin" -I"./" -I"../../common/inc" -I"../../../shared/inc" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.0\include"    --keep-dir "Release" -maxrregcount=0  --machine 32 --compile      -Xcompiler "/EHsc /nologo /Od /Zi  /MT " -o "Win32/Release/simpleTemplates.cu.obj" "C:\Users\Gadi\AppData\Local\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\src\AES\simpleTemplates.cu" -clean 
+         Deleting file "Win32/Release/simpleTemplates.cu.deps".
+       InitializeBuildStatus:
+         Creating "Win32/Release/simpleTemplates.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       AddCudaCompileDeps:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\cl.exe /E /nologo /showIncludes /TP /I./ /I../../common/inc /I../../../shared/inc /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.0\bin" /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.0\include" /I. /FIcuda_runtime.h /c "C:\Users\Gadi\AppData\Local\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\src\AES\simpleTemplates.cu" 
+       AddCudaCompilePropsDeps:
+         Found "CudaToolkitCustomDir".
+         Found "AdditionalDeps".
+         Found "CompileOut".
+         Found "Include".
+         Found "Keep".
+         Found "KeepDir".
+         Found "NvccCompilation".
+         Found "NvccPath".
+         Found "RequiredIncludes".
+         Found "TargetMachinePlatform".
+         Found "CInterleavedPTX".
+         Found "CodeGeneration".
+         Found "GPUDebugInfo".
+         Found "MaxRegCount".
+         Found "PtxAsOptionV".
+         Found "Defines".
+         Found "Emulation".
+         Found "HostDebugInfo".
+         Found "FastMath".
+         Found "Optimization".
+         Found "Runtime".
+         Found "RuntimeChecks".
+         Found "TypeInfo".
+         Found "Warning".
+         Found "AdditionalOptions".
+         Found "CommandLineTemplate".
+       AddCudaCompilePropsDeps:
+         Found "CudaToolkitCustomDir".
+         Found "AdditionalDeps".
+         Found "CompileOut".
+         Found "Include".
+         Found "Keep".
+         Found "KeepDir".
+         Found "NvccCompilation".
+         Found "NvccPath".
+         Found "RequiredIncludes".
+         Found "TargetMachinePlatform".
+         Found "CInterleavedPTX".
+         Found "CodeGeneration".
+         Found "GPUDebugInfo".
+         Found "MaxRegCount".
+         Found "PtxAsOptionV".
+         Found "Defines".
+         Found "Emulation".
+         Found "HostDebugInfo".
+         Found "FastMath".
+         Found "Optimization".
+         Found "Runtime".
+         Found "RuntimeChecks".
+         Found "TypeInfo".
+         Found "Warning".
+         Found "AdditionalOptions".
+         Found "CommandLineTemplate".
+       CudaBuild:
+         Compiling CUDA source file simpleTemplates.cu...
+         cmd.exe /C "C:\Users\Gadi\AppData\Local\Temp\281698c0997649269ab2183189f4899c.cmd"
+         "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.0\bin\nvcc.exe" -gencode=arch=compute_10,code=\"sm_10,compute_10\" -gencode=arch=compute_20,code=\"sm_20,compute_20\" --use-local-env --cl-version 2010 -ccbin "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin" -I"./" -I"../../common/inc" -I"../../../shared/inc" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.0\include"    --keep-dir "Release" -maxrregcount=0  --machine 32 --compile      -Xcompiler "/EHsc /nologo /Od /Zi  /MT " -o "Win32/Release/simpleTemplates.cu.obj" "C:\Users\Gadi\AppData\Local\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\src\AES\simpleTemplates.cu"
+         
+         C:\Users\Gadi\AppData\Local\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\src\AES>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.0\bin\nvcc.exe" -gencode=arch=compute_10,code=\"sm_10,compute_10\" -gencode=arch=compute_20,code=\"sm_20,compute_20\" --use-local-env --cl-version 2010 -ccbin "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin" -I"./" -I"../../common/inc" -I"../../../shared/inc" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.0\include"    --keep-dir "Release" -maxrregcount=0  --machine 32 --compile      -Xcompiler "/EHsc /nologo /Od /Zi  /MT " -o "Win32/Release/simpleTemplates.cu.obj" "C:\Users\Gadi\AppData\Local\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\src\AES\simpleTemplates.cu" 
+         simpleTemplates.cu
+         tmpxft_00001f14_00000000-3_simpleTemplates.compute_10.cudafe1.gpu
+         tmpxft_00001f14_00000000-7_simpleTemplates.compute_10.cudafe2.gpu
+         simpleTemplates.cu
+         tmpxft_00001f14_00000000-0_simpleTemplates.compute_20.cudafe1.gpu
+         tmpxft_00001f14_00000000-11_simpleTemplates.compute_20.cudafe2.gpu
+         simpleTemplates.cu
+         simpleTemplates.cu
+         tmpxft_00001f14_00000000-3_simpleTemplates.compute_10.cudafe1.cpp
+         tmpxft_00001f14_00000000-20_simpleTemplates.compute_10.ii
+         Note: including windows.h
+         Note: including math.h
+         Note: including assert.h
+       CudaBuild:
+         Skipping CUDA source file simpleTemplates_kernel.cu (excluded from build).
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"../../bin/win32/Release//simpleTemplates.exe" /NOLOGO /LIBPATH:"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.0\lib\Win32" /LIBPATH:../../common/lib/Win32 /LIBPATH:../../../shared/lib/Win32 cudart.lib cublas.lib cutil32.lib shrUtils32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Win32/Release/simpleTemplates.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /PDB:"C:\Users\Gadi\AppData\Local\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\bin\win32\Release\simpleTemplates.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"../../bin/win32/Release/simpleTemplates.lib" /MACHINE:X86 Win32/Release/simpleTemplates.cu.obj
+         "C:\Users\Gadi\AppData\Local\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\Win32\cutil32D.lib"
+         "C:\Users\Gadi\AppData\Local\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\shared\lib\Win32\shrUtils32D.lib"
+         LINK : /LTCG specified but no code generation required; remove /LTCG from the link command line to improve linker performance
+         simpleTemplates_vs2010.vcxproj -> C:\Users\Gadi\AppData\Local\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\src\AES\../../bin/win32/Release/simpleTemplates.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"../../bin/win32/Release//simpleTemplates.exe;#1" /manifest Win32/Release/simpleTemplates.exe.intermediate.manifest
+       FinalizeBuildStatus:
+         Deleting file "Win32/Release/simpleTemplates.unsuccessfulbuild".
+         Touching "Win32/Release/simpleTemplates.lastbuildstate".
+     1>Done Building Project "C:\Users\Gadi\AppData\Local\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\src\AES\simpleTemplates_vs2010.vcxproj" (rebuild target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:11.01

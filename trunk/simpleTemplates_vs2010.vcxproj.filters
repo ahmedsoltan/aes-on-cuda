@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Rijndael.cpp">
+      <Filter>AES</Filter>
+    </ClCompile>
+    <ClCompile Include="AES.cpp">
+      <Filter>AES</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AES.h">
+      <Filter>AES</Filter>
+    </ClInclude>
+    <ClInclude Include="Rijndael.h">
+      <Filter>AES</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Rijndael_GPU.cuh">
+      <Filter>AES_GPU</Filter>
+    </None>
+    <None Include="sharedmem.cuh">
+      <Filter>Main</Filter>
+    </None>
+    <None Include="cuPrintf.cuh">
+      <Filter>cuPrintf</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="Rijndael_GPU.cu">
+      <Filter>AES_GPU</Filter>
+    </CudaCompile>
+    <CudaCompile Include="Rijndael_GPU_kernel.cu">
+      <Filter>AES_GPU</Filter>
+    </CudaCompile>
+    <CudaCompile Include="simpleTemplates.cu">
+      <Filter>Main</Filter>
+    </CudaCompile>
+    <CudaCompile Include="simpleTemplates_kernel.cu">
+      <Filter>Main</Filter>
+    </CudaCompile>
+    <CudaCompile Include="cuPrintf.cu">
+      <Filter>cuPrintf</Filter>
+    </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="AES">
+      <UniqueIdentifier>{3954dfda-7c62-434a-8eaf-c3a978a0995f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AES_GPU">
+      <UniqueIdentifier>{45357126-96c6-4193-bcd8-f93d3717789c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Main">
+      <UniqueIdentifier>{3d56e21c-a31b-45fa-9e50-2687e7d56acc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cuPrintf">
+      <UniqueIdentifier>{91f9a2f6-4234-4579-9e70-b152252bc96a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
