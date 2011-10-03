@@ -23,11 +23,19 @@
 #define xmult(a) ((a)<<1) ^ (((a)&128) ? 0x01B : 0)
 
 // const device memory
-__device__ __constant__ char d_byte_sub_const[256];
-__device__ __constant__ char d_gf2_8_inv_const[256];
-__device__ __constant__ char d_inv_byte_sub_const[256];
+__device__ __constant__ unsigned char d_byte_sub_const[256];
+__device__ __constant__ unsigned char d_gf2_8_inv_const[256];
+__device__ __constant__ unsigned char d_inv_byte_sub_const[256];
 __device__ __constant__ unsigned long d_Rcon_const[60];
-__device__ __constant__ char d_shift_row_map_const[16];
+__device__ __constant__ unsigned char d_shift_row_map_const[16];
+__device__ __constant__ unsigned char d_inv_shift_row_map_const[16];
+
+__device__ __constant__ unsigned char d_mult_by_2_const[256];
+__device__ __constant__ unsigned char d_mult_by_3_const[256];
+__device__ __constant__ unsigned char d_mult_by_9_const[256];
+__device__ __constant__ unsigned char d_mult_by_11_const[256];
+__device__ __constant__ unsigned char d_mult_by_13_const[256];
+__device__ __constant__ unsigned char d_mult_by_14_const[256];
 
 struct SharedMemory
 {
@@ -124,5 +132,59 @@ __global__ void d_Round( unsigned char* g_state_idata, unsigned char* g_state_od
 	// write data to global memory
 	g_state_odata[tid] = s_state[tid];
 	
+}
+__global__ void d_inv_Round( unsigned char* g_state_idata, unsigned char* g_state_odata, unsigned char* g_key, int Nr , int RowSize) 
+{
+	__device__ __shared__ unsigned char s_state[64];
+	//__device__ __shared__ unsigned char s_temp_state[64];
+	//__device__ __shared__ char key[480]; //4*8*15
+
+	// access thread id
+	const unsigned int tid = threadIdx.x;
+	// access number of threads in this block
+	const unsigned int num_threads = blockDim.x;
+	// thread row index
+	const unsigned int Row = tid/RowSize;
+	// thread col index
+	const unsigned int Col = tid%RowSize;
+	//const unsigned int keyIndex = Nr*RowSize*4+tid;
+	const unsigned int Row1stIndex = Row * RowSize;
+	//const unsigned int Col1stIndex = Col * 4;
+
+	s_state[tid] = g_state_idata[tid];
+	__syncthreads();
+
+	// AddRoundKey(Nr)
+	s_state[tid] ^= g_key[Nr*RowSize*4+tid];
+	__syncthreads();
+	// InvShiftRow(Nr)
+	s_state[tid] = s_state[d_inv_shift_row_map_const[tid]];
+	__syncthreads();
+	//InvByteSub(Nr)
+	s_state[tid] = d_inv_byte_sub_const[s_state[tid]];
+	__syncthreads();
+	for (int i = Nr-1; i > 0; i--) {
+		//AddRoundKey(i)
+		s_state[tid] ^= g_key[i*RowSize*4+tid];
+		__syncthreads();	
+		//InvMixColumn(i)
+		s_state[tid] = d_mult_by_14_const[s_state[tid]]  
+					 ^ d_mult_by_11_const[s_state[Row1stIndex+(tid+1)%RowSize]]
+					 ^ d_mult_by_13_const[s_state[Row1stIndex+(tid+2)%RowSize]]
+					 ^ d_mult_by_9_const[s_state[Row1stIndex+(tid+3)%RowSize]];
+		__syncthreads();
+		//InvShiftByte(i)
+		s_state[tid] = s_state[d_inv_shift_row_map_const[tid]];
+		__syncthreads();
+		//InvByteSub(i)
+		s_state[tid] = d_inv_byte_sub_const[s_state[tid]];
+		__syncthreads();
+	}
+	// AddRoundKey(0)
+	s_state[tid] ^= g_key[tid];
+	__syncthreads();
+
+	// write data to global memory
+	g_state_odata[tid] = s_state[tid];
 }
 #endif // #ifndef_RIJNDAEL_GPU_KERNEL_H_
