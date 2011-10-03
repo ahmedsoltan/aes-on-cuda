@@ -66,10 +66,10 @@
 
 using namespace std;
 
-#define __TimingTests 
+//#define __TimingTests 
 // define this to test old direct slow method, else remove for fast method
 //#define _SLOW
-#define RANDOM_TEST_COUNT 1 // how many random tests to do
+#define RANDOM_TEST_COUNT 0 // how many random tests to do
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifdef _SLOW

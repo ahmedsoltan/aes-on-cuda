@@ -7,6 +7,9 @@
     <ClCompile Include="AES.cpp">
       <Filter>AES</Filter>
     </ClCompile>
+    <ClCompile Include="temp.cpp">
+      <Filter>temp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AES.h">
@@ -56,6 +59,9 @@
     </Filter>
     <Filter Include="cuPrintf">
       <UniqueIdentifier>{91f9a2f6-4234-4579-9e70-b152252bc96a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="temp">
+      <UniqueIdentifier>{a1ee713d-cbdf-4288-8edf-bc32042db101}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
