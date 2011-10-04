@@ -62,6 +62,9 @@ public:
 	// it if fails, throws the string "Tables failed to initialize"
 	Rijndael_GPU(void);
 
+	// Destructor - will reset GPU device befroe exiting.
+	~Rijndael_GPU(void);
+
 	void initGPUConst(void);
 
 	// multiple block encryption/decryption modes

@@ -69,7 +69,7 @@ using namespace std;
 //#define __TimingTests 
 // define this to test old direct slow method, else remove for fast method
 //#define _SLOW
-#define RANDOM_TEST_COUNT 0 // how many random tests to do
+#define RANDOM_TEST_COUNT 10 // how many random tests to do
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifdef _SLOW
@@ -249,7 +249,8 @@ bool RandomTest(int pos)
 	// data sizes in bytes
 	int keylen, blocklen,datalen,mode;
 	keylen   = (rand()%3)*8 + 16;
-	blocklen = (rand()%3)*8 + 16;
+	//blocklen = (rand()%3)*8 + 16;
+	blocklen = 16;
 	mode = rand()%2; // various chaining modes
 	assert((16 == keylen) || (24 == keylen) || (32 == keylen));
 	assert((16 == blocklen) || (24 == blocklen) || (32 == blocklen));
@@ -344,7 +345,7 @@ void Timing(int rounds, int keylen, int blocklen)
 	for (pos = 0; pos < rounds; pos++)
 		{
 #ifdef _GPU
-		printf(".");
+		//printf(".");
 #endif
 		start1 = GetCounter();
 		crypt.EncryptBlock(plaintext,ciphertext);
@@ -368,7 +369,7 @@ void Timing(int rounds, int keylen, int blocklen)
 	for (pos = 0; pos < rounds; pos++)
 		{
 #ifdef _GPU
-		printf(".");
+		//printf(".");
 #endif
 		start2 = GetCounter();
 		crypt.DecryptBlock(plaintext,ciphertext);
@@ -442,9 +443,9 @@ int aes_main(void)
 
 #ifdef __TimingTests
 	// check a bunch of timings for different key and block sizes	
-	for (int block = 16; block <= 32; block += 8)
+	//for (int block = 16; block <= 32; block += 8)
 		for (int key = 16; key <= 32; key += 8)
-			Timing(100000,key,block);
+			Timing(100000,key,16);
 #endif
 
 	// this is to randomly test data

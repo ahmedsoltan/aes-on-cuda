@@ -37,6 +37,8 @@ __device__ __constant__ unsigned char d_mult_by_11_const[256];
 __device__ __constant__ unsigned char d_mult_by_13_const[256];
 __device__ __constant__ unsigned char d_mult_by_14_const[256];
 
+__device__ __constant__ unsigned char d_key_const[480];
+
 struct SharedMemory
 {
     __device__ int* getPointer() { extern __shared__ int s_int[]; return s_int; }  
@@ -133,7 +135,7 @@ __global__ void d_Round( unsigned char* g_state_idata, unsigned char* g_state_od
 	g_state_odata[tid] = s_state[tid];
 	
 }
-__global__ void d_inv_Round( unsigned char* g_state_idata, unsigned char* g_state_odata, unsigned char* g_key, int Nr , int RowSize) 
+__global__ void d_inv_Round( unsigned char* g_state_idata, unsigned char* g_state_odata, int Nr , int RowSize) 
 {
 	__device__ __shared__ unsigned char s_state[64];
 	//__device__ __shared__ unsigned char s_temp_state[64];
@@ -155,7 +157,7 @@ __global__ void d_inv_Round( unsigned char* g_state_idata, unsigned char* g_stat
 	__syncthreads();
 
 	// AddRoundKey(Nr)
-	s_state[tid] ^= g_key[Nr*RowSize*4+tid];
+	s_state[tid] ^= d_key_const[Nr*RowSize*4+tid];
 	__syncthreads();
 	// InvShiftRow(Nr)
 	s_state[tid] = s_state[d_inv_shift_row_map_const[tid]];
@@ -165,7 +167,7 @@ __global__ void d_inv_Round( unsigned char* g_state_idata, unsigned char* g_stat
 	__syncthreads();
 	for (int i = Nr-1; i > 0; i--) {
 		//AddRoundKey(i)
-		s_state[tid] ^= g_key[i*RowSize*4+tid];
+		s_state[tid] ^= d_key_const[i*RowSize*4+tid];
 		__syncthreads();	
 		//InvMixColumn(i)
 		s_state[tid] = d_mult_by_14_const[s_state[tid]]  
@@ -181,7 +183,7 @@ __global__ void d_inv_Round( unsigned char* g_state_idata, unsigned char* g_stat
 		__syncthreads();
 	}
 	// AddRoundKey(0)
-	s_state[tid] ^= g_key[tid];
+	s_state[tid] ^= d_key_const[tid];
 	__syncthreads();
 
 	// write data to global memory

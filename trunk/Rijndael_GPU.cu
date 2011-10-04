@@ -68,14 +68,7 @@ namespace GPU { // anonymous namespace
 		12,1,2,3, 	12,1,2,3,  	14,1,2,3,   // Nb*32 = 192
 		14,1,3,4, 	14,1,3,4,  	14,1,3,4,   // Nb*32 = 256
 	};
-	/*
-	unsigned char shift_row_map[16] = {
-	0x0,0x1,0x2,0x3,
-	0x7,0x4,0x5,0x6,
-	0xA,0xB,0x8,0x9,
-	0xD,0xE,0xF,0xC,
-	};
-	*/
+
 	/*
 	unsigned char shift_row_map[16] = {
 	0x0,0x1,0x2,0x3,
@@ -84,6 +77,8 @@ namespace GPU { // anonymous namespace
 	0xC,0xD,0xE,0xF,
 	};
 	*/
+
+	//TODO: make 24 & 32 bytes version of this maps
 	unsigned char shift_row_map[16] = {
 		0x0,0x5,0xA,0xF,
 		0x4,0x9,0xE,0x3,
@@ -852,6 +847,28 @@ void Rijndael_GPU::EncryptBlock(const unsigned char * datain1, unsigned char * d
 	const unsigned long * datain = reinterpret_cast<const unsigned long*>(datain1);
 	unsigned long * dataout = reinterpret_cast<unsigned long*>(dataout1);
 
+	memcpy(state,datain,state_size);
+	AddRoundKey(0);
+	for (int i = 1; i < Nr; i++)
+		{
+#ifdef __DEBUG
+		printf("round %d:\n",i);
+#endif
+		Round(i);
+		if (0 != states)
+			{ // compare
+			if (memcmp(state,states+(i-1)*state_size,state_size) != 0)
+				{
+				cerr << "State " << i << " failed:\n";
+				cerr << "State     : "; DumpHex(state,state_size);
+				cerr << "Should be : "; DumpHex(states+(i-1)*state_size,state_size);
+				}
+			}
+		}
+	FinalRound(Nr);
+	memcpy(dataout,state,state_size);
+
+	/*
 	//TODO: move these to initGPU
 	int devID;
 	cudaDeviceProp deviceProps;
@@ -940,6 +957,9 @@ void Rijndael_GPU::EncryptBlock(const unsigned char * datain1, unsigned char * d
 	cutilSafeCall(cudaFree(d_odata));
 
 	cutilDeviceReset();
+	*/
+
+
 } // Encrypt
 
 // call this to encrypt any size block
@@ -1012,9 +1032,10 @@ void Rijndael_GPU::DecryptBlock(const unsigned char * datain1, unsigned char * d
 
 	unsigned char* d_ext_key;
 	int key_size = Nb*(Nr+1)*4;
-	cutilSafeCall( cudaMalloc( (void**) &d_ext_key, key_size));
+	//cutilSafeCall( cudaMalloc( (void**) &d_ext_key, key_size));
 	// copy host memory to device
-	cutilSafeCall( cudaMemcpy( d_ext_key, W, key_size, cudaMemcpyHostToDevice));
+	//cutilSafeCall( cudaMemcpy( d_ext_key, W, key_size, cudaMemcpyHostToDevice));
+	cutilSafeCall( cudaMemcpyToSymbol( "d_key_const", W, key_size));
 
 	// allocate device memory for result
 	unsigned char* d_odata;
@@ -1041,10 +1062,10 @@ void Rijndael_GPU::DecryptBlock(const unsigned char * datain1, unsigned char * d
 	}
 	/////////////////////////////////////////////////////////////////
 
-	printf("launching GPU kernel...\n");
+	//printf("launching GPU kernel...\n");
 
 	// execute the kernel
-	d_inv_Round<<< grid, threads >>>( d_idata, d_odata, d_ext_key, Nr, Nb);
+	d_inv_Round<<< grid, threads >>>( d_idata, d_odata, Nr, Nb);
 	cutilDeviceSynchronize(); // ???
 
 	// check if kernel execution generated and error
@@ -1068,16 +1089,16 @@ void Rijndael_GPU::DecryptBlock(const unsigned char * datain1, unsigned char * d
 
 	cutilSafeCall( cudaMemcpy( state, d_odata, state_size,	cudaMemcpyDeviceToHost) );
 	cutilCheckError( cutStopTimer( timer));
-	printf( "GPU Processing time: %f (ms)\n", cutGetTimerValue( timer));
+	//printf( "GPU Processing time: %f (ms)\n", cutGetTimerValue( timer));
 	cutilCheckError( cutDeleteTimer( timer));
 
 	memcpy(dataout,state,state_size);
 
 	cutilSafeCall(cudaFree(d_idata));
-	cutilSafeCall(cudaFree(d_ext_key));
+	//cutilSafeCall(cudaFree(d_ext_key));
 	cutilSafeCall(cudaFree(d_odata));
 
-	cutilDeviceReset();
+	//cutilDeviceReset();
 
 	/*
 	memcpy(state,datain,state_size);
@@ -1150,6 +1171,11 @@ Rijndael_GPU::Rijndael_GPU(void)
 	this->initGPUConst();
 	if (false == tablesInitialized)
 		throw "Tables failed to initialize";
+}
+
+Rijndael_GPU::~Rijndael_GPU(void)
+{
+	cutilDeviceReset();
 }
 
 void Rijndael_GPU::initGPUConst(void){
