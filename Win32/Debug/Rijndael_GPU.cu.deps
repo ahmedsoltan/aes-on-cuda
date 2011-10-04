@@ -54,7 +54,7 @@ c:\program files\nvidia gpu computing toolkit\cuda\v4.0\include\texture_types.h
 c:\program files\nvidia gpu computing toolkit\cuda\v4.0\include\vector_types.h
 c:\program files\nvidia gpu computing toolkit\cuda\v4.0\include\host_defines.h
 c:\program files\nvidia gpu computing toolkit\cuda\v4.0\include\vector_types.h
-c:\programdata\nvidia corporation\nvidia gpu computing sdk 4.0\c\src\aes\Rijndael_GPU.cuh
+c:\users\gadi\appdata\local\nvidia corporation\nvidia gpu computing sdk 4.0\c\src\aes\Rijndael_GPU.cuh
 C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\assert.h
 C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\crtdefs.h
 C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include\stdlib.h
@@ -248,7 +248,7 @@ C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\wtypes.h
 c:\program files (x86)\microsoft sdks\windows\v7.0a\include\rpcndr.h
 C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\pshpack8.h
 C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\rpcnsip.h
-C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\\include\rpcsal.h
+C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\rpcsal.h
 C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\poppack.h
 c:\program files (x86)\microsoft sdks\windows\v7.0a\include\guiddef.h
 C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include\winioctl.h
@@ -304,6 +304,6 @@ C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.0\include\cuda.h
 C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.0\include\cuda_runtime.h
 C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v4.0\include\device_launch_parameters.h
 c:\program files\nvidia gpu computing toolkit\cuda\v4.0\include\vector_types.h
-c:\programdata\nvidia corporation\nvidia gpu computing sdk 4.0\c\src\aes\cuPrintf.cu
-c:\programdata\nvidia corporation\nvidia gpu computing sdk 4.0\c\src\aes\cuPrintf.cuh
-c:\programdata\nvidia corporation\nvidia gpu computing sdk 4.0\c\src\aes\Rijndael_GPU_kernel.cu
+c:\users\gadi\appdata\local\nvidia corporation\nvidia gpu computing sdk 4.0\c\src\aes\cuPrintf.cu
+c:\users\gadi\appdata\local\nvidia corporation\nvidia gpu computing sdk 4.0\c\src\aes\cuPrintf.cuh
+c:\users\gadi\appdata\local\nvidia corporation\nvidia gpu computing sdk 4.0\c\src\aes\Rijndael_GPU_kernel.cu
