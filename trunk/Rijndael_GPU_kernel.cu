@@ -189,4 +189,67 @@ __global__ void d_inv_Round( unsigned char* g_state_idata, unsigned char* g_stat
 	// write data to global memory
 	g_state_odata[tid] = s_state[tid];
 }
+__global__ void d_inv_Round_multiBlock( unsigned char* g_state_idata, unsigned char* g_state_odata, int Nr , int RowSize) 
+{
+	// access number of threads in this block
+	const unsigned int num_threads = blockDim.x * blockDim.y;
+
+	//allocate shared memory
+	__device__ __shared__ unsigned char s_state[256];	
+
+	// block shared memory location
+	const unsigned int s_mem_idx = blockIdx.x * num_threads;
+
+	// access thread id
+	const unsigned int tid = threadIdx.x + threadIdx.y * 16;	
+
+	// access thread row first idx
+	const unsigned int state_offset = threadIdx.y * 16;	
+
+	// aaccess thread id within cypher block
+	const unsigned int ctid = tid % 16;
+
+	// thread row index
+	const unsigned int Row = ctid/RowSize;
+	// thread col index
+	const unsigned int Col = ctid%RowSize;
+	//const unsigned int keyIndex = Nr*RowSize*4+tid;
+	const unsigned int Row1stIndex = Row * RowSize;	
+
+	s_state[tid] = g_state_idata[tid + s_mem_idx];
+	__syncthreads();
+
+	// AddRoundKey(Nr)
+	s_state[tid] ^= d_key_const[Nr*RowSize*4+ctid];
+	__syncthreads();
+	// InvShiftRow(Nr)
+	s_state[tid] = s_state[d_inv_shift_row_map_const[ctid] + state_offset];
+	__syncthreads();
+	//InvByteSub(Nr)
+	s_state[tid] = d_inv_byte_sub_const[s_state[tid]];
+	__syncthreads();
+	for (int i = Nr-1; i > 0; i--) {
+		//AddRoundKey(i)
+		s_state[tid] ^= d_key_const[i*RowSize*4+ctid];
+		__syncthreads();	
+		//InvMixColumn(i)
+		s_state[tid] = d_mult_by_14_const[s_state[tid]]  
+				^ d_mult_by_11_const[s_state[Row1stIndex + (ctid+1)%RowSize + state_offset]]
+				^ d_mult_by_13_const[s_state[Row1stIndex + (tid+2)%RowSize + state_offset]]
+				^ d_mult_by_9_const[s_state[Row1stIndex + (tid+3)%RowSize + state_offset]];
+		__syncthreads();
+		//InvShiftByte(i)
+		s_state[tid] = s_state[d_inv_shift_row_map_const[ctid] + state_offset];
+		__syncthreads();
+		//InvByteSub(i)
+		s_state[tid] = d_inv_byte_sub_const[s_state[tid]];
+		__syncthreads();
+	}
+	// AddRoundKey(0)
+	s_state[tid] ^= d_key_const[ctid];
+	__syncthreads();
+
+	// write data to global memory
+	g_state_odata[tid + s_mem_idx] = s_state[tid];
+}
 #endif // #ifndef_RIJNDAEL_GPU_KERNEL_H_

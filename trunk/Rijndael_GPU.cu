@@ -1123,19 +1123,111 @@ void Rijndael_GPU::DecryptBlock(const unsigned char * datain1, unsigned char * d
 
 // call this to decrypt any size block
 void Rijndael_GPU::Decrypt(const unsigned char * datain, unsigned char * dataout, unsigned long numBlocks, BlockMode mode)
-{
+{	
 	if (0 == numBlocks)
 		return;
 	unsigned int blocksize = Nb*4;
+	//TODO: move these to initGPU
+	int devID;
+	cudaDeviceProp deviceProps;
+	devID = cutGetMaxGflopsDeviceId();
+	cudaSetDevice( devID );
+
+	// get number of SMs on this GPU
+	cutilSafeCall(cudaGetDeviceProperties(&deviceProps, devID));
+	//printf("CUDA device [%s] has %d Multi-Processors\n", deviceProps.name, deviceProps.multiProcessorCount);
+	unsigned int numOfRounds = ceil((float)(numBlocks*blocksize / deviceProps.totalGlobalMem));
+	unsigned int totalMemSize =  numBlocks*blocksize;
+	unsigned int roundMem = (totalMemSize > deviceProps.totalGlobalMem ? deviceProps.totalGlobalMem : numBlocks*blocksize);
+	// Data left to digest
+	unsigned int DataLeft = totalMemSize*blocksize;
+
 	switch (mode)
 	{
 	case ECB :
-		while (numBlocks)
+		
+		printf("ECB mode:\n");
+		printf("dataSize: %d, numOfRounds: %d, roundmem: %d\n",totalMemSize,numOfRounds,roundMem);
+		for(unsigned int currentRound = 0; currentRound<numOfRounds; currentRound++)
 		{
-			DecryptBlock(datain,dataout);
-			datain   += blocksize;
-			dataout  += blocksize;
-			--numBlocks;
+			// allocate device memory
+			size_t memsize = roundMem;
+
+			unsigned char* d_idata;
+			cutilSafeCall( cudaMalloc( (void**) &d_idata, memsize));
+			// copy host memory to device
+			cutilSafeCall( cudaMemcpy( d_idata, datain, memsize, cudaMemcpyHostToDevice));
+
+			unsigned char* d_ext_key;
+			int key_size = (Nr+1)*blocksize;			
+			cutilSafeCall( cudaMemcpyToSymbol( "d_key_const", W, key_size));
+
+			// allocate device memory for result
+			unsigned char* d_odata;
+			cutilSafeCall( cudaMalloc( (void**) &d_odata, memsize));
+
+			const unsigned int grid_size = ceil((float)(numBlocks/16));
+			// setup execution parameters
+			dim3  grid( grid_size, 1, 1);
+			dim3  threads( 16, 16, 1);
+
+			unsigned int timer = 0;
+			cutilCheckError( cutCreateTimer( &timer));
+			cutilCheckError( cutStartTimer( timer));
+
+			//////////////////////////////////////////////////////////////////
+			//Architectures with compute capability 1.x, function
+			//cuPrintf() is used. Otherwise, function printf() is called.
+			bool use_cuPrintf = (deviceProps.major < 2);
+
+			if (use_cuPrintf)
+			{
+				//Initializaton, allocate buffers on both host
+				//and device for data to be printed.
+				cudaPrintfInit();
+			}
+			/////////////////////////////////////////////////////////////////
+
+			//printf("launching GPU kernel...\n");
+
+			// execute the kernel
+			d_inv_Round_multiBlock<<< grid, threads >>>( d_idata, d_odata, Nr, Nb);
+			cutilDeviceSynchronize(); // ???
+
+			// check if kernel execution generated and error
+			cutilCheckMsg("Kernel execution failed");
+
+
+			/////////////////////////////////////////////////////////////
+			if (use_cuPrintf)
+			{
+				//Dump current contents of output buffer to standard 
+				//output, and origin (block id and thread id) of each line 
+				//of output is enabled(true).
+				cudaPrintfDisplay(stdout, true);
+
+				//Free allocated buffers by cudaPrintfInit().
+				cudaPrintfEnd();
+			}
+			//////////////////////////////////////////////////////////////
+
+
+
+			cutilSafeCall( cudaMemcpy( state, d_odata, memsize,	cudaMemcpyDeviceToHost) );
+			cutilCheckError( cutStopTimer( timer));
+			//printf( "GPU Processing time: %f (ms)\n", cutGetTimerValue( timer));
+			cutilCheckError( cutDeleteTimer( timer));
+
+			memcpy(dataout,state,state_size);
+
+			cutilSafeCall(cudaFree(d_idata));
+			//cutilSafeCall(cudaFree(d_ext_key));
+			cutilSafeCall(cudaFree(d_odata));
+			
+			DataLeft -= roundMem;			
+			datain   += roundMem;
+			dataout  += roundMem;
+			roundMem = ( DataLeft < roundMem ? DataLeft : roundMem );			
 		}
 		break;
 	case CBC :
