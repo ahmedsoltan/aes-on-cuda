@@ -1007,9 +1007,8 @@ void Rijndael_GPU::StartDecryption(const unsigned char * key)
 
 void Rijndael_GPU::DecryptBlock(const unsigned char * datain1, unsigned char * dataout1, const unsigned char * states)
 {
-	const unsigned long * datain = reinterpret_cast<const unsigned long*>(datain1);
-	unsigned long * dataout = reinterpret_cast<unsigned long*>(dataout1);
 
+	/*
 	//TODO: move these to initGPU
 	int devID;
 	cudaDeviceProp deviceProps;
@@ -1099,8 +1098,11 @@ void Rijndael_GPU::DecryptBlock(const unsigned char * datain1, unsigned char * d
 	cutilSafeCall(cudaFree(d_odata));
 
 	//cutilDeviceReset();
+	*/
 
-	/*
+	const unsigned long * datain = reinterpret_cast<const unsigned long*>(datain1);
+	unsigned long * dataout = reinterpret_cast<unsigned long*>(dataout1);
+
 	memcpy(state,datain,state_size);
 	InvFinalRound(Nr);
 	for (int i = Nr-1; i > 0; i--)
@@ -1118,7 +1120,7 @@ void Rijndael_GPU::DecryptBlock(const unsigned char * datain1, unsigned char * d
 	}
 	AddRoundKey(0);
 	memcpy(dataout,state,state_size);
-	*/
+
 } // Decrypt
 
 // call this to decrypt any size block
@@ -1126,7 +1128,13 @@ void Rijndael_GPU::Decrypt(const unsigned char * datain, unsigned char * dataout
 {	
 	if (0 == numBlocks)
 		return;
+
 	unsigned int blocksize = Nb*4;
+
+	////////////////////////////////////////////////////////////////////
+	unsigned int threads_per_block = 256;
+	size_t num_threads = 256;
+
 	//TODO: move these to initGPU
 	int devID;
 	cudaDeviceProp deviceProps;
@@ -1136,20 +1144,29 @@ void Rijndael_GPU::Decrypt(const unsigned char * datain, unsigned char * dataout
 	// get number of SMs on this GPU
 	cutilSafeCall(cudaGetDeviceProperties(&deviceProps, devID));
 	//printf("CUDA device [%s] has %d Multi-Processors\n", deviceProps.name, deviceProps.multiProcessorCount);
-	unsigned int numOfRounds = ceil((float)(numBlocks*blocksize / deviceProps.totalGlobalMem));
-	unsigned int totalMemSize =  numBlocks*blocksize;
-	unsigned int roundMem = (totalMemSize > deviceProps.totalGlobalMem ? deviceProps.totalGlobalMem : numBlocks*blocksize);
+
+	unsigned int totalDataSize =  numBlocks*blocksize;
+	unsigned int numOfRounds = ceil((double)totalDataSize / deviceProps.totalGlobalMem);
+	unsigned int roundMem = (totalDataSize > deviceProps.totalGlobalMem ? deviceProps.totalGlobalMem : totalDataSize);
 	// Data left to digest
-	unsigned int DataLeft = totalMemSize*blocksize;
+	unsigned int DataLeft = totalDataSize;
+
+	// copy expanded key to const memory of device
+	unsigned char* d_ext_key;
+	int key_size = (Nr+1)*blocksize;			
+	cutilSafeCall( cudaMemcpyToSymbol( "d_key_const", W, key_size));
+	////////////////////////////////////////////////////////////////////
 
 	switch (mode)
 	{
 	case ECB :
 		
 		printf("ECB mode:\n");
-		printf("dataSize: %d, numOfRounds: %d, roundmem: %d\n",totalMemSize,numOfRounds,roundMem);
+
 		for(unsigned int currentRound = 0; currentRound<numOfRounds; currentRound++)
 		{
+			//printf("totalDataSize: %d, numOfRounds: %d, roundmem: %d , currentRound: %d, DataLeft: %d\n",totalDataSize,numOfRounds,roundMem,currentRound,DataLeft);
+
 			// allocate device memory
 			size_t memsize = roundMem;
 
@@ -1158,18 +1175,14 @@ void Rijndael_GPU::Decrypt(const unsigned char * datain, unsigned char * dataout
 			// copy host memory to device
 			cutilSafeCall( cudaMemcpy( d_idata, datain, memsize, cudaMemcpyHostToDevice));
 
-			unsigned char* d_ext_key;
-			int key_size = (Nr+1)*blocksize;			
-			cutilSafeCall( cudaMemcpyToSymbol( "d_key_const", W, key_size));
-
 			// allocate device memory for result
 			unsigned char* d_odata;
 			cutilSafeCall( cudaMalloc( (void**) &d_odata, memsize));
 
-			const unsigned int grid_size = ceil((float)(numBlocks/16));
+			const unsigned int grid_size = ceil((double)roundMem/threads_per_block);
 			// setup execution parameters
 			dim3  grid( grid_size, 1, 1);
-			dim3  threads( 16, 16, 1);
+			dim3  threads( 16, 16, 1); // 16*16 = 256
 
 			unsigned int timer = 0;
 			cutilCheckError( cutCreateTimer( &timer));
@@ -1188,7 +1201,7 @@ void Rijndael_GPU::Decrypt(const unsigned char * datain, unsigned char * dataout
 			}
 			/////////////////////////////////////////////////////////////////
 
-			//printf("launching GPU kernel...\n");
+			printf("launching GPU kernel...\n");
 
 			// execute the kernel
 			d_inv_Round_multiBlock<<< grid, threads >>>( d_idata, d_odata, Nr, Nb);
@@ -1213,23 +1226,22 @@ void Rijndael_GPU::Decrypt(const unsigned char * datain, unsigned char * dataout
 
 
 
-			cutilSafeCall( cudaMemcpy( state, d_odata, memsize,	cudaMemcpyDeviceToHost) );
+			cutilSafeCall( cudaMemcpy( dataout, d_odata, memsize,	cudaMemcpyDeviceToHost) );
 			cutilCheckError( cutStopTimer( timer));
-			//printf( "GPU Processing time: %f (ms)\n", cutGetTimerValue( timer));
+			printf( "GPU Processing time: %f (ms)\n", cutGetTimerValue( timer));
 			cutilCheckError( cutDeleteTimer( timer));
 
-			memcpy(dataout,state,state_size);
-
 			cutilSafeCall(cudaFree(d_idata));
-			//cutilSafeCall(cudaFree(d_ext_key));
 			cutilSafeCall(cudaFree(d_odata));
 			
 			DataLeft -= roundMem;			
 			datain   += roundMem;
 			dataout  += roundMem;
-			roundMem = ( DataLeft < roundMem ? DataLeft : roundMem );			
+			roundMem = ( DataLeft < roundMem ? DataLeft : roundMem );
+
 		}
 		break;
+
 	case CBC :
 		{
 			unsigned char buffer[64];
@@ -1250,6 +1262,7 @@ void Rijndael_GPU::Decrypt(const unsigned char * datain, unsigned char * dataout
 			}
 		}
 		break;
+
 	default :
 		assert(!"Unknown mode!");
 	}

@@ -67,9 +67,10 @@
 using namespace std;
 
 //#define __TimingTests 
+
 // define this to test old direct slow method, else remove for fast method
 //#define _SLOW
-#define RANDOM_TEST_COUNT 10 // how many random tests to do
+#define RANDOM_TEST_COUNT 50 // how many random tests to do
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifdef _SLOW
@@ -251,7 +252,10 @@ bool RandomTest(int pos)
 	keylen   = (rand()%3)*8 + 16;
 	//blocklen = (rand()%3)*8 + 16;
 	blocklen = 16;
-	mode = rand()%2; // various chaining modes
+
+	//mode = rand()%2; // various chaining modes
+	mode = 0; // ECB only!!
+
 	assert((16 == keylen) || (24 == keylen) || (32 == keylen));
 	assert((16 == blocklen) || (24 == blocklen) || (32 == blocklen));
 

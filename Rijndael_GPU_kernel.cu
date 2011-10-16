@@ -78,8 +78,6 @@ __global__ void testKernel( int* g_idata, int* g_odata)
   g_odata[tid] = sdata[tid];
 }
 
-
-
 __global__ void d_Round( unsigned char* g_state_idata, unsigned char* g_state_odata, unsigned char* g_key, int Nr , int RowSize) 
 {
 	__device__ __shared__ unsigned char s_state[64];
@@ -189,13 +187,14 @@ __global__ void d_inv_Round( unsigned char* g_state_idata, unsigned char* g_stat
 	// write data to global memory
 	g_state_odata[tid] = s_state[tid];
 }
+
 __global__ void d_inv_Round_multiBlock( unsigned char* g_state_idata, unsigned char* g_state_odata, int Nr , int RowSize) 
 {
-	// access number of threads in this block
-	const unsigned int num_threads = blockDim.x * blockDim.y;
-
 	//allocate shared memory
 	__device__ __shared__ unsigned char s_state[256];	
+
+	// access number of threads in this block
+	const unsigned int num_threads = blockDim.x * blockDim.y; // = 256
 
 	// block shared memory location
 	const unsigned int s_mem_idx = blockIdx.x * num_threads;
@@ -214,7 +213,10 @@ __global__ void d_inv_Round_multiBlock( unsigned char* g_state_idata, unsigned c
 	// thread col index
 	const unsigned int Col = ctid%RowSize;
 	//const unsigned int keyIndex = Nr*RowSize*4+tid;
-	const unsigned int Row1stIndex = Row * RowSize;	
+	const unsigned int Row1stIndex = Row * RowSize;
+
+	//CUPRINTF("kernel vars: gridDim.x = %d , gridDim.y = %d, blockDim.x = %d, blockDim.y = %d, blockIdx.x = %d, blockIdx.y = %d, threadIdx.x = $d, threadIdx.y = %d\n",gridDim.x, gridDim.y,blockDim.x,blockDim.y,blockIdx.x,blockIdx.y,threadIdx.x,threadIdx.y);
+	CUPRINTF("registers values:  num_threads = %d, s_mem_idx = %d, tid = %d, state_offset = &d, ctid = %d, Row = %d, Col = $d, Row1stIndex = %d \n",num_threads,s_mem_idx,tid,state_offset,ctid,Row,Col);
 
 	s_state[tid] = g_state_idata[tid + s_mem_idx];
 	__syncthreads();
