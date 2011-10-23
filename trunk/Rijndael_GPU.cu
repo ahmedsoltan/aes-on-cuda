@@ -1166,22 +1166,27 @@ void Rijndael_GPU::Decrypt(const unsigned char * datain, unsigned char * dataout
 		for(unsigned int currentRound = 0; currentRound<numOfRounds; currentRound++)
 		{
 			//printf("totalDataSize: %d, numOfRounds: %d, roundmem: %d , currentRound: %d, DataLeft: %d\n",totalDataSize,numOfRounds,roundMem,currentRound,DataLeft);
+			const unsigned int grid_dim_limit = 65000;
+			const unsigned int grid_theoretical_size = ceil((double)roundMem/threads_per_block);
+			const unsigned int grid_x = ( grid_theoretical_size<grid_dim_limit ? grid_theoretical_size : grid_dim_limit );
+			const unsigned int grid_y = ( ceil((double)grid_theoretical_size/grid_dim_limit) );
 
 			// allocate device memory
-			size_t memsize = roundMem;
+			//size_t memsize = roundMem;
+			size_t memsize = grid_y*grid_x*256;
 
 			unsigned char* d_idata;
 			cutilSafeCall( cudaMalloc( (void**) &d_idata, memsize));
 			// copy host memory to device
-			cutilSafeCall( cudaMemcpy( d_idata, datain, memsize, cudaMemcpyHostToDevice));
+			cutilSafeCall( cudaMemcpy( d_idata, datain, roundMem, cudaMemcpyHostToDevice));
 
 			// allocate device memory for result
 			unsigned char* d_odata;
 			cutilSafeCall( cudaMalloc( (void**) &d_odata, memsize));
 
-			const unsigned int grid_size = ceil((double)roundMem/threads_per_block);
+			
 			// setup execution parameters
-			dim3  grid( grid_size, 1, 1);
+			dim3  grid( grid_x, grid_y, 1);
 			dim3  threads( 16, 16, 1); // 16*16 = 256
 
 			unsigned int timer = 0;
@@ -1226,7 +1231,7 @@ void Rijndael_GPU::Decrypt(const unsigned char * datain, unsigned char * dataout
 
 
 
-			cutilSafeCall( cudaMemcpy( dataout, d_odata, memsize,	cudaMemcpyDeviceToHost) );
+			cutilSafeCall( cudaMemcpy( dataout, d_odata, roundMem,	cudaMemcpyDeviceToHost) );
 			cutilCheckError( cutStopTimer( timer));
 			printf( "GPU Processing time: %f (ms)\n", cutGetTimerValue( timer));
 			cutilCheckError( cutDeleteTimer( timer));
@@ -1238,7 +1243,7 @@ void Rijndael_GPU::Decrypt(const unsigned char * datain, unsigned char * dataout
 			datain   += roundMem;
 			dataout  += roundMem;
 			roundMem = ( DataLeft < roundMem ? DataLeft : roundMem );
-
+			cutilDeviceReset();
 		}
 		break;
 
