@@ -195,9 +195,9 @@ __global__ void d_inv_Round_multiBlock( unsigned char* g_state_idata, unsigned c
 
 	// access number of threads in this block
 	const unsigned int num_threads = blockDim.x * blockDim.y; // = 256
-
+	//if(threadIdx.x == 1 && threadIdx.y == 1) CUPRINTF("blockIdx.x = %d, blockIdx.y = %d, gridDim.x = %d, gridDim.y = %d\n",blockIdx.x,blockIdx.y,gridDim.x,gridDim.y);
 	// block shared memory location
-	const unsigned int s_mem_idx = blockIdx.x * num_threads;
+	const unsigned int s_mem_idx = (blockIdx.y * gridDim.x + blockIdx.x) * num_threads;
 
 	// access thread id
 	const unsigned int tid = threadIdx.x + threadIdx.y * 16;	
@@ -216,7 +216,7 @@ __global__ void d_inv_Round_multiBlock( unsigned char* g_state_idata, unsigned c
 	const unsigned int Row1stIndex = Row * RowSize;
 
 	//CUPRINTF("kernel vars: gridDim.x = %d , gridDim.y = %d, blockDim.x = %d, blockDim.y = %d, blockIdx.x = %d, blockIdx.y = %d, threadIdx.x = $d, threadIdx.y = %d\n",gridDim.x, gridDim.y,blockDim.x,blockDim.y,blockIdx.x,blockIdx.y,threadIdx.x,threadIdx.y);
-	CUPRINTF("registers values:  num_threads = %d, s_mem_idx = %d, tid = %d, state_offset = &d, ctid = %d, Row = %d, Col = $d, Row1stIndex = %d \n",num_threads,s_mem_idx,tid,state_offset,ctid,Row,Col);
+	//CUPRINTF("registers values:  num_threads = %d, s_mem_idx = %d, tid = %d, state_offset = %d, ctid = %d, Row = %d, Col = %d, Row1stIndex = %d \n",num_threads,s_mem_idx,tid,state_offset,ctid,Row,Col);
 
 	s_state[tid] = g_state_idata[tid + s_mem_idx];
 	__syncthreads();

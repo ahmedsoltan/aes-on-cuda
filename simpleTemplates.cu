@@ -394,7 +394,7 @@ void Timing(int rounds, int keylen, int blocklen)
 void AESEncryptFile(const char * fname)
 	{
 	ifstream ifile(fname,ios_base::binary);
-	ofstream ofile("aesout.dat",ios_base::binary);
+	ofstream ofile("D:\\out.txt",ios_base::binary);
 
 	// get file size
 	ifile.seekg(0,ios_base::end);
@@ -409,15 +409,18 @@ void AESEncryptFile(const char * fname)
 	ifile.read(ibuffer,fsize);
 
 	AES crypt;
+
 	crypt.SetParameters(192);
 	// random key good enough
 	unsigned char key[192/8];
 	for (int pos = 0; pos < sizeof(key); ++pos)
 		key[pos] = rand();
 	crypt.StartEncryption(key);
-	crypt.Encrypt(reinterpret_cast<const unsigned char*>(ibuffer),reinterpret_cast<unsigned char*>(obuffer),size/16);
+	crypt.Encrypt(reinterpret_cast<const unsigned char*>(ibuffer),reinterpret_cast<unsigned char*>(obuffer),size/16,static_cast<AES::BlockMode>(0));
+	// Gadi:
+	crypt.Decrypt(reinterpret_cast<const unsigned char*>(obuffer),reinterpret_cast<unsigned char*>(ibuffer),size/16,static_cast<AES::BlockMode>(0));
 
-	ofile.write(obuffer,size);
+	ofile.write(ibuffer,size);
 
 	delete [] ibuffer;
 	delete [] obuffer;
@@ -469,7 +472,8 @@ int aes_main(void)
 		cout << "PASSED: All tests passed\n";
 
 	// test a file encryption
-	//	AESEncryptFile("main.cpp");
+	cout << "encrypting file test:\n";
+	AESEncryptFile("d:\\test.txt");
 
 	cout << "\n\n";
 	return 0;
