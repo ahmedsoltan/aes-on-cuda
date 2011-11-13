@@ -443,18 +443,23 @@ void AESEncryptFile(string path)
 	cpu_crypt.StartEncryption(key);
 	gpu_crypt.Encrypt(reinterpret_cast<const unsigned char*>(ibuffer),reinterpret_cast<unsigned char*>(obuffer),size/16,static_cast<GPU_CRYPT::BlockMode>(0));
 
-	// Gadi:
+	UINT64 cpuTime,gpuTime;
 	INT64 start, finish;
 	printf("CPU decryption:\n");
 	start = GetTimeMs64();
 	cpu_crypt.Decrypt(reinterpret_cast<const unsigned char*>(obuffer),reinterpret_cast<unsigned char*>(ibuffer),size/16,static_cast<CPU_CRYPT::BlockMode>(0));
 	finish = GetTimeMs64();
 	ofileCPU.write(ibuffer,size);
-	printf("CPU processing time: %d (ms)\n",( (finish - start) ));
+	cpuTime = finish - start;
+	printf("CPU processing time: %d (ms)\n",cpuTime);
 	printf("GPU decryption:\n");
+	start = GetTimeMs64();
 	gpu_crypt.Decrypt(reinterpret_cast<const unsigned char*>(obuffer),reinterpret_cast<unsigned char*>(ibuffer),size/16,static_cast<CRYPT::BlockMode>(0));
+	finish = GetTimeMs64();
 	ofileGPU.write(ibuffer,size);
-	
+	gpuTime = finish - start;
+	//printf("GPU processing time: %d (ms)\n",gpuTime);
+	printf("Total Speedup: %f\n", (double)cpuTime/gpuTime);
 
 	delete [] ibuffer;
 	delete [] obuffer;
@@ -466,8 +471,18 @@ void AESEncryptFile(string path)
 ////////////////////////////////////////////////////////////////////////////////
 // AES main
 ////////////////////////////////////////////////////////////////////////////////
-int aes_main(void)
+int aes_main(int argc,char** argv)
 {
+	string filename = "";
+	if(argc>2){
+		printf("usage: %s [<input-file>]\n",argv[0]);
+		exit(0);
+	}
+
+	if(argc==2)
+		filename.assign(argv[1]);
+
+
 	#ifdef _WIN32
 	// to try to prevent windows from interfering too much
 	SetPriorityClass(GetCurrentProcess(),HIGH_PRIORITY_CLASS);
@@ -507,8 +522,12 @@ int aes_main(void)
 		cout << "PASSED: All tests passed\n";
 
 	// test a file encryption
-	cout << "encrypting file test:\n";
-	AESEncryptFile("d:\\test.jpg");
+	ifstream ifile(filename);
+	if (ifile) {
+		ifile.close();
+		cout << "\n\nencrypting file test:\n";
+		AESEncryptFile(filename);
+	}
 
 	cout << "\n\n";
 	return 0;
@@ -519,7 +538,7 @@ int aes_main(void)
 int main( int argc, char** argv) 
 {
 
-	aes_main();
+	aes_main(argc,argv);
 
 	/*
 	shrQAStart(argc, argv);
@@ -617,7 +636,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 template<class T>
 void runTest( int argc, char** argv, int len) 
-{
+{	
     int devID;
     cudaDeviceProp deviceProps;
 
