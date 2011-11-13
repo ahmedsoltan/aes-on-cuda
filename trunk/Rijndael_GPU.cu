@@ -1144,10 +1144,16 @@ void Rijndael_GPU::Decrypt(const unsigned char * datain, unsigned char * dataout
 	// get number of SMs on this GPU
 	cutilSafeCall(cudaGetDeviceProperties(&deviceProps, devID));
 	//printf("CUDA device [%s] has %d Multi-Processors\n", deviceProps.name, deviceProps.multiProcessorCount);
+	
+	// extract device current free memory in Bytes
+	unsigned int totalMem;
+	unsigned int freeMem;
+	cutilSafeCall(cudaMemGetInfo(&freeMem,&totalMem));
+	//printf("total free mem: %d\n",freeMem);
 
 	unsigned int totalDataSize =  numBlocks*blocksize;
-	unsigned int numOfRounds = ceil((double)totalDataSize / deviceProps.totalGlobalMem);
-	unsigned int roundMem = (totalDataSize > deviceProps.totalGlobalMem ? deviceProps.totalGlobalMem : totalDataSize);
+	unsigned int numOfRounds = ceil((double)totalDataSize / freeMem);
+	unsigned int roundMem = (totalDataSize > freeMem ? freeMem : totalDataSize);
 	// Data left to digest
 	unsigned int DataLeft = totalDataSize;
 
@@ -1161,12 +1167,12 @@ void Rijndael_GPU::Decrypt(const unsigned char * datain, unsigned char * dataout
 	{
 	case ECB :
 		
-		printf("ECB mode:\n");
+		//printf("ECB mode:\n");
 
 		for(unsigned int currentRound = 0; currentRound<numOfRounds; currentRound++)
 		{
 			//printf("totalDataSize: %d, numOfRounds: %d, roundmem: %d , currentRound: %d, DataLeft: %d\n",totalDataSize,numOfRounds,roundMem,currentRound,DataLeft);
-			const unsigned int grid_dim_limit = 65000;
+			const unsigned int grid_dim_limit = deviceProps.maxGridSize[0];
 			const unsigned int grid_theoretical_size = ceil((double)roundMem/threads_per_block);
 			const unsigned int grid_x = ( grid_theoretical_size<grid_dim_limit ? grid_theoretical_size : grid_dim_limit );
 			const unsigned int grid_y = ( ceil((double)grid_theoretical_size/grid_dim_limit) );
@@ -1243,12 +1249,12 @@ void Rijndael_GPU::Decrypt(const unsigned char * datain, unsigned char * dataout
 			datain   += roundMem;
 			dataout  += roundMem;
 			roundMem = ( DataLeft < roundMem ? DataLeft : roundMem );
-			cutilDeviceReset();
 		}
 		break;
 
 	case CBC :
 		{
+			//printf("CBC mode\n");
 			unsigned char buffer[64];
 			memset(buffer,0,sizeof(buffer)); // clear out - todo - allow setting the Initialization Vector - needed for security
 			DecryptBlock(datain,dataout); // do first block
@@ -1271,6 +1277,9 @@ void Rijndael_GPU::Decrypt(const unsigned char * datain, unsigned char * dataout
 	default :
 		assert(!"Unknown mode!");
 	}
+
+	cutilDeviceReset();
+
 } // Decrypt
 
 // the constructor - makes sure local things are initialized
