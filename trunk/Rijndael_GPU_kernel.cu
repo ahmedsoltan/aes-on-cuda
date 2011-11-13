@@ -60,11 +60,7 @@ __global__ void testKernel( int* g_idata, int* g_odata)
   // access number of threads in this block
   const unsigned int num_threads = blockDim.x;
 
-  //CUPRINTF("\tValue is:%d\n", tid);
-  CUPRINTF("\tbyteSub[0] = 0x%x\tbyteSub[255] = 0x%x\n",d_byte_sub_const[0],d_byte_sub_const[255]);  
-  CUPRINTF("\tgf2_8_inv[0] = 0x%x\tgf2_8_inv[255] = 0x%x\n",d_gf2_8_inv_const[0],d_gf2_8_inv_const[255]);  
-  CUPRINTF("\tinv_byte_sub[0] = 0x%x\tinv_byte_sub[255] = 0x%x\n",d_inv_byte_sub_const[0],d_inv_byte_sub_const[255]);  
-  CUPRINTF("\tRcon[0] = 0x%x\tRcon[59] = 0x%x\n",d_Rcon_const[0],d_Rcon_const[59]);    
+  //CUPRINTF("\tValue is:%d\n", tid);   
 
   // read in input data from global memory
   sdata[tid] = g_idata[tid];
