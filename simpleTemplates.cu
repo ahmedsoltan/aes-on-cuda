@@ -37,6 +37,7 @@
 #endif
 #include <iostream>
 #include <fstream>
+#include <string>
 #include <time.h>
 #include <assert.h>
 
@@ -51,6 +52,9 @@
 
 // includes, kernels
 #include "simpleTemplates_kernel.cu"
+
+// include timer function
+#include "time_ms_64.hpp"
 
 /////////////////////////////////////////////////////////////////////////////////
 // Includes / Declerations for AES GPU code
@@ -74,10 +78,10 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifdef _SLOW
-#define AES Rijndael
+#define CRYPT Rijndael
 #else
 	#ifdef _GPU
-	#define AES Rijndael_GPU
+	#define CRYPT Rijndael_GPU
 	#endif
 #endif
 
@@ -186,7 +190,7 @@ bool TestVector(const test_t & vector, bool use_states)
 	// data sizes in bytes
 	int keylen = strlen(vector.key)/2, blocklen = strlen(vector.plaintext)/2;
 
-	AES crypt;
+	CRYPT crypt;
 	crypt.SetParameters(keylen*8,blocklen*8);
 	unsigned char key[32], plaintext[32],ciphertext[32],temptext[32];
 	unsigned char states[4096*20];
@@ -260,7 +264,7 @@ bool RandomTest(int pos)
 	assert((16 == blocklen) || (24 == blocklen) || (32 == blocklen));
 
 #define MAXDATA 4096 // max length of random data
-	AES crypt;
+	CRYPT crypt;
 	crypt.SetParameters(keylen*8,blocklen*8);
 	datalen = rand()%MAXDATA;
 	unsigned char key[32], plaintext[MAXDATA+40],ciphertext[MAXDATA+40],temptext[MAXDATA+40];
@@ -289,10 +293,10 @@ bool RandomTest(int pos)
 
 	int blocks = (datalen + blocklen-1)/blocklen;
 	crypt.StartEncryption(key);
-	crypt.Encrypt(plaintext+2,ciphertext+2,blocks,static_cast<AES::BlockMode>(mode));
+	crypt.Encrypt(plaintext+2,ciphertext+2,blocks,static_cast<CRYPT::BlockMode>(mode));
 
 	crypt.StartDecryption(key);
-	crypt.Decrypt(ciphertext+2,temptext+2,blocks,static_cast<AES::BlockMode>(mode));
+	crypt.Decrypt(ciphertext+2,temptext+2,blocks,static_cast<CRYPT::BlockMode>(mode));
 
 	if (memcmp(plaintext+2,temptext+2,datalen) != 0)
 		{
@@ -329,7 +333,7 @@ void Timing(int rounds, int keylen, int blocklen)
 
 	int pos;
 
-	AES crypt;
+	CRYPT crypt;
 	crypt.SetParameters(keylen*8,blocklen*8);
 
 	srand(0); // make repeatable
@@ -391,10 +395,28 @@ void Timing(int rounds, int keylen, int blocklen)
 
 
 // test a file encryption
-void AESEncryptFile(const char * fname)
+void AESEncryptFile(string path)
 	{
-	ifstream ifile(fname,ios_base::binary);
-	ofstream ofile("D:\\out.txt",ios_base::binary);
+
+	#define CPU_CRYPT Rijndael
+	#define GPU_CRYPT Rijndael_GPU
+
+	string ext = path.substr(path.find_last_of(".") + 1);
+	string fname;
+	string dir = "";
+	size_t pos = path.find_last_of("\\");
+	if(pos != std::string::npos){
+		fname.assign(path.begin() + pos + 1, path.end() - ext.length() - 1);
+		dir.assign(path.begin(),path.begin() + pos + 1);
+	} else {
+		fname.assign(path.begin(), path.end() - ext.length() - 1);
+	}
+	string outFileCPU = dir + fname + "_cpu_out." + ext;
+	string outFileGPU = dir + fname + "_gpu_out." + ext;
+
+	ifstream ifile(path,ios_base::binary);
+	ofstream ofileCPU(outFileCPU,ios_base::binary);
+	ofstream ofileGPU(outFileGPU,ios_base::binary);
 
 	// get file size
 	ifile.seekg(0,ios_base::end);
@@ -408,24 +430,37 @@ void AESEncryptFile(const char * fname)
 	char * obuffer = new char[size];
 	ifile.read(ibuffer,fsize);
 
-	AES crypt;
+	GPU_CRYPT gpu_crypt;
+	CPU_CRYPT cpu_crypt;
 
-	crypt.SetParameters(192);
+	gpu_crypt.SetParameters(192);
+	cpu_crypt.SetParameters(192);
 	// random key good enough
 	unsigned char key[192/8];
 	for (int pos = 0; pos < sizeof(key); ++pos)
 		key[pos] = rand();
-	crypt.StartEncryption(key);
-	crypt.Encrypt(reinterpret_cast<const unsigned char*>(ibuffer),reinterpret_cast<unsigned char*>(obuffer),size/16,static_cast<AES::BlockMode>(0));
-	// Gadi:
-	crypt.Decrypt(reinterpret_cast<const unsigned char*>(obuffer),reinterpret_cast<unsigned char*>(ibuffer),size/16,static_cast<AES::BlockMode>(0));
+	gpu_crypt.StartEncryption(key);
+	cpu_crypt.StartEncryption(key);
+	gpu_crypt.Encrypt(reinterpret_cast<const unsigned char*>(ibuffer),reinterpret_cast<unsigned char*>(obuffer),size/16,static_cast<GPU_CRYPT::BlockMode>(0));
 
-	ofile.write(ibuffer,size);
+	// Gadi:
+	INT64 start, finish;
+	printf("CPU decryption:\n");
+	start = GetTimeMs64();
+	cpu_crypt.Decrypt(reinterpret_cast<const unsigned char*>(obuffer),reinterpret_cast<unsigned char*>(ibuffer),size/16,static_cast<CPU_CRYPT::BlockMode>(0));
+	finish = GetTimeMs64();
+	ofileCPU.write(ibuffer,size);
+	printf("CPU processing time: %d (ms)\n",( (finish - start) ));
+	printf("GPU decryption:\n");
+	gpu_crypt.Decrypt(reinterpret_cast<const unsigned char*>(obuffer),reinterpret_cast<unsigned char*>(ibuffer),size/16,static_cast<CRYPT::BlockMode>(0));
+	ofileGPU.write(ibuffer,size);
+	
 
 	delete [] ibuffer;
 	delete [] obuffer;
 
-	ofile.close();
+	ofileCPU.close();
+	ofileGPU.close();
 	ifile.close();
 	} // AESEncryptFile
 ////////////////////////////////////////////////////////////////////////////////
@@ -473,7 +508,7 @@ int aes_main(void)
 
 	// test a file encryption
 	cout << "encrypting file test:\n";
-	AESEncryptFile("d:\\test.txt");
+	AESEncryptFile("d:\\test.jpg");
 
 	cout << "\n\n";
 	return 0;
